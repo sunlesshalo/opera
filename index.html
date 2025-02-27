@@ -1,27 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Food & Beverage Shop</title>
+  <title>Magazin Opera Cluj</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Load Stripe.js; replace with your actual publishable test key -->
+  <!-- Load Stripe.js; replace with your publishable test key -->
   <script src="https://js.stripe.com/v3/"></script>
   <script>
+    // Folosiți cheia publică de test corespunzătoare
     const stripe = Stripe('pk_test_kzR0GijspryB9bnxsMOyYcRO00DB7Xi62A');
   </script>
 </head>
 <body>
   <header>
-    <h1>Food & Beverage Shop</h1>
+    <h1>Magazinul de Produse Alimentare & Băuturi</h1>
+    <p>Opera din Cluj</p>
   </header>
   <main>
     <section id="products"></section>
     <section id="cart">
-      <h2>Shopping Cart</h2>
+      <h2>Coș de cumpărături</h2>
       <ul id="cart-items"></ul>
-      <p>Total: $<span id="total">0.00</span></p>
-      <button id="checkoutBtn">Checkout</button>
+      <p>Total: <span id="total">0.00</span> RON</p>
+      <button id="checkoutBtn">Finalizare Comandă</button>
     </section>
   </main>
   <script src="app.js"></script>

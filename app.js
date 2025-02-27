@@ -1,25 +1,25 @@
-// Define 20 food & beverage products.
+// Lista de produse (20) în RON, cu denumiri realiste pentru un bar la Opera din Cluj.
 const products = [
-  { id: 1, name: 'Apple Juice', price: 3.50 },
-  { id: 2, name: 'Orange Juice', price: 3.00 },
-  { id: 3, name: 'Banana Smoothie', price: 4.00 },
-  { id: 4, name: 'Lemonade', price: 2.50 },
-  { id: 5, name: 'Iced Tea', price: 2.75 },
-  { id: 6, name: 'Coffee', price: 2.00 },
-  { id: 7, name: 'Espresso', price: 2.50 },
-  { id: 8, name: 'Cappuccino', price: 3.00 },
-  { id: 9, name: 'Latte', price: 3.50 },
-  { id: 10, name: 'Hot Chocolate', price: 3.00 },
-  { id: 11, name: 'Water Bottle', price: 1.50 },
-  { id: 12, name: 'Soda', price: 1.75 },
-  { id: 13, name: 'Energy Drink', price: 2.50 },
-  { id: 14, name: 'Milkshake', price: 4.50 },
-  { id: 15, name: 'Protein Shake', price: 5.00 },
-  { id: 16, name: 'Green Tea', price: 2.25 },
-  { id: 17, name: 'Herbal Tea', price: 2.50 },
-  { id: 18, name: 'Smoothie Bowl', price: 6.00 },
-  { id: 19, name: 'Iced Coffee', price: 3.25 },
-  { id: 20, name: 'Frappe', price: 4.00 },
+  { id: 1, name: 'Vin roșu sec', price: 30.00 },
+  { id: 2, name: 'Vin alb sec', price: 28.00 },
+  { id: 3, name: 'Bere artizanală', price: 15.00 },
+  { id: 4, name: 'Cafea', price: 12.00 },
+  { id: 5, name: 'Ceai de mentă', price: 10.00 },
+  { id: 6, name: 'Cocktail Cluj', price: 35.00 },
+  { id: 7, name: 'Suc natural de portocale', price: 12.00 },
+  { id: 8, name: 'Suc natural de mere', price: 10.00 },
+  { id: 9, name: 'Limonadă proaspătă', price: 14.00 },
+  { id: 10, name: 'Ciocolată caldă', price: 13.00 },
+  { id: 11, name: 'Smoothie de fructe', price: 18.00 },
+  { id: 12, name: 'Apă minerală', price: 5.00 },
+  { id: 13, name: 'Platou cu brânzeturi', price: 40.00 },
+  { id: 14, name: 'Platou cu mezeluri', price: 45.00 },
+  { id: 15, name: 'Sandviș cu șuncă și cașcaval', price: 20.00 },
+  { id: 16, name: 'Salată de sezon', price: 25.00 },
+  { id: 17, name: 'Gustare de cartofi prăjiți', price: 18.00 },
+  { id: 18, name: 'Biscuiți artizanali', price: 10.00 },
+  { id: 19, name: 'Supă de legume', price: 22.00 },
+  { id: 20, name: 'Clătite cu gem', price: 16.00 },
 ];
 
 const productsContainer = document.getElementById('products');
@@ -29,9 +29,8 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 
 let cart = [];
 
-// Function to render products
+// Funcție pentru afișarea produselor
 function displayProducts() {
-  // Clear container in case of re-renders
   productsContainer.innerHTML = '';
   products.forEach(product => {
     const productDiv = document.createElement('div');
@@ -39,26 +38,26 @@ function displayProducts() {
     productDiv.setAttribute('data-id', product.id);
     productDiv.innerHTML = `
       <h3>${product.name}</h3>
-      <p>Price: $${product.price.toFixed(2)}</p>
-      <button class="add-to-cart">Add to Cart</button>
+      <p>Preț: ${product.price.toFixed(2)} RON</p>
+      <button class="add-to-cart">Adaugă în coș</button>
     `;
     productsContainer.appendChild(productDiv);
   });
 }
 
-// Function to add product to cart
+// Adaugă produs în coș
 function addToCart(productId) {
   const product = products.find(p => p.id === productId);
   cart.push(product);
   displayCart();
 }
 
-// Function to display cart items and update total
+// Afișează produsele din coș și actualizează totalul
 function displayCart() {
   cartItemsContainer.innerHTML = '';
   cart.forEach(item => {
     const li = document.createElement('li');
-    li.textContent = `${item.name} - $${item.price.toFixed(2)}`;
+    li.textContent = `${item.name} - ${item.price.toFixed(2)} RON`;
     cartItemsContainer.appendChild(li);
   });
   updateTotal();
@@ -69,13 +68,13 @@ function updateTotal() {
   totalDisplay.textContent = total.toFixed(2);
 }
 
-// Checkout process: create a Stripe Checkout Session and redirect
+// Procesul de checkout: creează un Checkout Session Stripe și redirecționează.
 checkoutBtn.addEventListener('click', async function() {
   const lineItems = cart.map(item => ({
     price_data: {
-      currency: 'usd',
+      currency: 'ron',
       product_data: { name: item.name },
-      unit_amount: Math.round(item.price * 100), // amount in cents
+      unit_amount: Math.round(item.price * 100), // RON în bani mici
     },
     quantity: 1,
   }));
@@ -87,15 +86,15 @@ checkoutBtn.addEventListener('click', async function() {
       body: JSON.stringify({ lineItems }),
     });
     const session = await response.json();
-    // Redirect directly using the returned session URL.
+    // Redirecționează direct la URL-ul de checkout
     window.location.href = session.url;
   } catch (error) {
-    console.error('Error during checkout:', error);
-    alert('Error during checkout: ' + error.message);
+    console.error('Eroare la finalizarea comenzii:', error);
+    alert('Eroare la finalizarea comenzii: ' + error.message);
   }
 });
 
-// Use event delegation for Add-to-Cart buttons.
+// Eveniment de delegare pentru butoanele "Adaugă în coș"
 productsContainer.addEventListener('click', function(event) {
   if (event.target && event.target.matches('button.add-to-cart')) {
     const productDiv = event.target.closest('.product');
@@ -104,5 +103,5 @@ productsContainer.addEventListener('click', function(event) {
   }
 });
 
-// Ensure products are rendered after DOM loads.
+// Asigură-te că produsele sunt afișate după ce DOM-ul este încărcat
 document.addEventListener('DOMContentLoaded', displayProducts);
