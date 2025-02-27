@@ -1,4 +1,4 @@
-// Define 20 food & beverage products in RON with realistic names for a Romanian opera bar in Cluj.
+// Define 20 food & beverage products in RON with realistic names.
 const products = [
   { id: 1, name: 'Vin roșu sec', price: 30.00 },
   { id: 2, name: 'Vin alb sec', price: 28.00 },
@@ -52,12 +52,18 @@ function addToCart(productId) {
   displayCart();
 }
 
-// Display the cart and update total.
+// Remove a product from the cart by its index.
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  displayCart();
+}
+
+// Display the cart items and update total.
 function displayCart() {
   cartItemsContainer.innerHTML = '';
-  cart.forEach(item => {
+  cart.forEach((item, index) => {
     const li = document.createElement('li');
-    li.textContent = `${item.name} - ${item.price.toFixed(2)} RON`;
+    li.innerHTML = `${item.name} - ${item.price.toFixed(2)} RON <span class="remove" data-index="${index}">&times;</span>`;
     cartItemsContainer.appendChild(li);
   });
   updateTotal();
@@ -93,12 +99,20 @@ checkoutBtn.addEventListener('click', async function() {
   }
 });
 
-// Use event delegation for Add-to-Cart buttons.
+// Event delegation for Add-to-Cart buttons.
 productsContainer.addEventListener('click', function(event) {
   if (event.target && event.target.matches('button.add-to-cart')) {
     const productDiv = event.target.closest('.product');
     const productId = parseInt(productDiv.getAttribute('data-id'));
     addToCart(productId);
+  }
+});
+
+// Event delegation for the remove ("×") button in the cart.
+cartItemsContainer.addEventListener('click', function(event) {
+  if (event.target && event.target.classList.contains('remove')) {
+    const index = parseInt(event.target.getAttribute('data-index'));
+    removeFromCart(index);
   }
 });
 

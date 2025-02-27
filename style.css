@@ -79,6 +79,30 @@ button:active {
   text-align: center;
 }
 
+/* Remove bullet points from cart items */
+#cart-items {
+  list-style: none;
+  padding-left: 0;
+}
+
+/* Style for each cart item */
+#cart-items li {
+  margin: 5px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Style for the red remove icon */
+.remove {
+  color: red;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 10px;
+  font-size: 1.2em;
+}
+
+
 /* Spacer to ensure main content doesn't go under the sticky cart */
 .spacer {
   height: 140px;
