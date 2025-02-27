@@ -1,0 +1,60 @@
+/* Mobile-first styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+header,
+main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1, h2 {
+  text-align: center;
+}
+
+#products {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.product {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 10px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Tablet & larger screens */
+@media (min-width: 600px) {
+  .product {
+    width: calc(45% - 20px);
+  }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .product {
+    width: calc(30% - 20px);
+  }
+}
+
+#cart {
+  border-top: 2px solid #ddd;
+  padding-top: 20px;
+  margin-top: 20px;
+}
