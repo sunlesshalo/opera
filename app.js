@@ -1,8 +1,8 @@
-// Lista de produse (20) în RON, cu denumiri realiste pentru un bar la Opera din Cluj.
+// Define 20 food & beverage products in RON with realistic names for a Romanian opera bar in Cluj.
 const products = [
   { id: 1, name: 'Vin roșu sec', price: 30.00 },
   { id: 2, name: 'Vin alb sec', price: 28.00 },
-  { id: 3, name: 'Bere a la Cluj', price: 27.00 },
+  { id: 3, name: 'Bere artizanală', price: 15.00 },
   { id: 4, name: 'Cafea', price: 12.00 },
   { id: 5, name: 'Ceai de mentă', price: 10.00 },
   { id: 6, name: 'Cocktail Cluj', price: 35.00 },
@@ -29,7 +29,7 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 
 let cart = [];
 
-// Funcție pentru afișarea produselor
+// Render products to the page.
 function displayProducts() {
   productsContainer.innerHTML = '';
   products.forEach(product => {
@@ -45,14 +45,14 @@ function displayProducts() {
   });
 }
 
-// Adaugă produs în coș
+// Add a product to the cart.
 function addToCart(productId) {
   const product = products.find(p => p.id === productId);
   cart.push(product);
   displayCart();
 }
 
-// Afișează produsele din coș și actualizează totalul
+// Display the cart and update total.
 function displayCart() {
   cartItemsContainer.innerHTML = '';
   cart.forEach(item => {
@@ -68,13 +68,13 @@ function updateTotal() {
   totalDisplay.textContent = total.toFixed(2);
 }
 
-// Procesul de checkout: creează un Checkout Session Stripe și redirecționează.
+// Checkout process: create a Stripe Checkout Session and redirect.
 checkoutBtn.addEventListener('click', async function() {
   const lineItems = cart.map(item => ({
     price_data: {
       currency: 'ron',
       product_data: { name: item.name },
-      unit_amount: Math.round(item.price * 100), // RON în bani mici
+      unit_amount: Math.round(item.price * 100), // amount in bani
     },
     quantity: 1,
   }));
@@ -86,7 +86,6 @@ checkoutBtn.addEventListener('click', async function() {
       body: JSON.stringify({ lineItems }),
     });
     const session = await response.json();
-    // Redirecționează direct la URL-ul de checkout
     window.location.href = session.url;
   } catch (error) {
     console.error('Eroare la finalizarea comenzii:', error);
@@ -94,7 +93,7 @@ checkoutBtn.addEventListener('click', async function() {
   }
 });
 
-// Eveniment de delegare pentru butoanele "Adaugă în coș"
+// Use event delegation for Add-to-Cart buttons.
 productsContainer.addEventListener('click', function(event) {
   if (event.target && event.target.matches('button.add-to-cart')) {
     const productDiv = event.target.closest('.product');
@@ -103,5 +102,5 @@ productsContainer.addEventListener('click', function(event) {
   }
 });
 
-// Asigură-te că produsele sunt afișate după ce DOM-ul este încărcat
+// Ensure products are rendered after DOM loads.
 document.addEventListener('DOMContentLoaded', displayProducts);
