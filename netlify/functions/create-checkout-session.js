@@ -7,13 +7,16 @@ exports.handler = async (event, context) => {
   try {
     const { lineItems } = JSON.parse(event.body);
 
+    // Use environment variables if set, otherwise use your live domain.
+    const successUrl = process.env.SUCCESS_URL || 'https://fastidious-belekoy-266e0b.netlify.app/success';
+    const cancelUrl  = process.env.CANCEL_URL  || 'https://fastidious-belekoy-266e0b.netlify.app/cancel';
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
       line_items: lineItems,
-      // Replace these URLs with your live success and cancel pages.
-      success_url: 'https://yourdomain.com/success',
-      cancel_url: 'https://yourdomain.com/cancel',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     return {
