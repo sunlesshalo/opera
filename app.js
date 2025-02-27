@@ -2,7 +2,7 @@
 const products = [
   { id: 1, name: 'Vin roșu sec', price: 30.00 },
   { id: 2, name: 'Vin alb sec', price: 28.00 },
-  { id: 3, name: 'Bere artizanală', price: 15.00 },
+  { id: 3, name: 'Bere a la Cluj', price: 27.00 },
   { id: 4, name: 'Cafea', price: 12.00 },
   { id: 5, name: 'Ceai de mentă', price: 10.00 },
   { id: 6, name: 'Cocktail Cluj', price: 35.00 },
