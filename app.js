@@ -29,9 +29,8 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 
 let cart = [];
 
-// Render products using a document fragment for efficiency.
+// Render products to the page.
 function displayProducts() {
-  const fragment = document.createDocumentFragment();
   products.forEach(product => {
     const productDiv = document.createElement('div');
     productDiv.classList.add('product');
@@ -41,12 +40,11 @@ function displayProducts() {
       <p>Price: $${product.price.toFixed(2)}</p>
       <button class="add-to-cart">Add to Cart</button>
     `;
-    fragment.appendChild(productDiv);
+    productsContainer.appendChild(productDiv);
   });
-  productsContainer.appendChild(fragment);
 }
 
-// Use event delegation for the add-to-cart buttons.
+// Event delegation for "Add to Cart" buttons.
 productsContainer.addEventListener('click', function(event) {
   if (event.target && event.target.matches('button.add-to-cart')) {
     const productDiv = event.target.closest('.product');
@@ -63,13 +61,11 @@ function addToCart(productId) {
 
 function displayCart() {
   cartItemsContainer.innerHTML = '';
-  const fragment = document.createDocumentFragment();
   cart.forEach(item => {
     const li = document.createElement('li');
     li.textContent = `${item.name} - $${item.price.toFixed(2)}`;
-    fragment.appendChild(li);
+    cartItemsContainer.appendChild(li);
   });
-  cartItemsContainer.appendChild(fragment);
   updateTotal();
 }
 
@@ -85,7 +81,7 @@ checkoutBtn.addEventListener('click', function() {
     price_data: {
       currency: 'usd',
       product_data: { name: item.name },
-      unit_amount: Math.round(item.price * 100),
+      unit_amount: Math.round(item.price * 100), // Stripe expects cents
     },
     quantity: 1,
   }));

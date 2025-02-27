@@ -5,8 +5,7 @@ body {
   padding: 20px;
 }
 
-header,
-main {
+header, main {
   max-width: 800px;
   margin: 0 auto;
 }
@@ -37,6 +36,12 @@ button {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+
+button:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Tablet & larger screens */
