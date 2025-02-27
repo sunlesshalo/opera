@@ -19,9 +19,10 @@ exports.handler = async (event, context) => {
       cancel_url: cancelUrl,
     });
 
+    // Return both the session id and the checkout URL.
     return {
       statusCode: 200,
-      body: JSON.stringify({ id: session.id }),
+      body: JSON.stringify({ id: session.id, url: session.url }),
     };
   } catch (error) {
     console.error('Error creating Stripe session:', error);
