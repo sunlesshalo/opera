@@ -29,6 +29,13 @@ const checkoutBtn = document.getElementById('checkoutBtn');
 
 let cart = [];
 
+// Utility function for haptic feedback on supported devices.
+function vibrateFeedback(duration = 50) {
+  if (navigator.vibrate) {
+    navigator.vibrate(duration);
+  }
+}
+
 // Render products to the page.
 function displayProducts() {
   productsContainer.innerHTML = '';
@@ -76,6 +83,9 @@ function updateTotal() {
 
 // Checkout process: create a Stripe Checkout Session and redirect.
 checkoutBtn.addEventListener('click', async function() {
+  // Provide haptic feedback for tapping the checkout button.
+  vibrateFeedback();
+
   const lineItems = cart.map(item => ({
     price_data: {
       currency: 'ron',
@@ -99,16 +109,18 @@ checkoutBtn.addEventListener('click', async function() {
   }
 });
 
-// Event delegation for Add-to-Cart buttons.
+// Use event delegation for Add-to-Cart buttons.
 productsContainer.addEventListener('click', function(event) {
   if (event.target && event.target.matches('button.add-to-cart')) {
+    // Provide haptic feedback on "Add to Cart"
+    vibrateFeedback();
     const productDiv = event.target.closest('.product');
     const productId = parseInt(productDiv.getAttribute('data-id'));
     addToCart(productId);
   }
 });
 
-// Event delegation for the remove ("×") button in the cart.
+// Use event delegation for the remove ("×") button in the cart.
 cartItemsContainer.addEventListener('click', function(event) {
   if (event.target && event.target.classList.contains('remove')) {
     const index = parseInt(event.target.getAttribute('data-index'));
