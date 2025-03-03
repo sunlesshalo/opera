@@ -1,163 +1,226 @@
-<script>
-  // Replace with your Supabase project details
-  const supabaseUrl = 'https://xxazvjnafqjchvqwqklg.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4YXp2am5hZnFqY2h2cXdxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5OTA1MjAsImV4cCI6MjA1NjU2NjUyMH0.PF9P_EvwV3XdjnjJC0w1WazqjZnDejiJnhImfe6sDFc';
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sales Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Load Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Authentication Container -->
+  <div id="auth-container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <p>Don't have an account? <a href="register.html">Register here</a>.</p>
+    </form>
+  </div>
 
-  const authContainer = document.getElementById('auth-container');
-  const dashboard = document.getElementById('dashboard');
-  const loginForm = document.getElementById('login-form');
-  const logoutBtn = document.getElementById('logout-btn');
-  const pendingTableBody = document.querySelector('#pending-table tbody');
-  const preparedTableBody = document.querySelector('#prepared-table tbody');
-  const exportCsvBtn = document.getElementById('export-csv');
-  const clearOrdersBtn = document.getElementById('clear-orders');
+  <!-- Dashboard Content (hidden until login) -->
+  <div id="dashboard" style="display: none;">
+    <button id="logout-btn">Logout</button>
+    <h1>Sales Dashboard</h1>
+    <div>
+      <button id="export-csv">Export CSV</button>
+      <button id="clear-orders">Clear All Orders</button>
+    </div>
 
-  // Listen for auth state changes
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if(session) {
-      authContainer.style.display = 'none';
-      dashboard.style.display = 'block';
-      loadOrders();
-      subscribeToOrders();
-    } else {
-      authContainer.style.display = 'block';
-      dashboard.style.display = 'none';
-    }
-  });
+    <!-- Pending Orders Table -->
+    <h2>Pending Orders</h2>
+    <table id="pending-table" border="1">
+      <thead>
+        <tr>
+          <th>Order Date</th>
+          <th>Ordered Items</th>
+          <th>Order Value</th>
+          <th>Buyer Name</th>
+          <th>Loc</th>
+          <th>Mark as Prepared</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-  // Login form submission with detailed logging for troubleshooting
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    console.log("Login attempt response:", { data, error });
-    if(error) {
-      alert('Login error: ' + error.message);
-    } else {
-      alert("Login successful!");
-    }
-  });
+    <!-- Prepared Orders Table -->
+    <h2>Prepared Orders</h2>
+    <table id="prepared-table" border="1">
+      <thead>
+        <tr>
+          <th>Order Date</th>
+          <th>Ordered Items</th>
+          <th>Order Value</th>
+          <th>Buyer Name</th>
+          <th>Loc</th>
+          <th>Undo Preparation</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  // Logout functionality
-  logoutBtn.addEventListener('click', async () => {
-    await supabaseClient.auth.signOut();
-  });
+  <script>
+    // Replace with your Supabase project details
+    const supabaseUrl = 'https://xxazvjnafqjchvqwqklg.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4YXp2am5hZnFqY2h2cXdxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5OTA1MjAsImV4cCI6MjA1NjU2NjUyMH0.PF9P_EvwV3XdjnjJC0w1WazqjZnDejiJnhImfe6sDFc';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // Function to load orders from Supabase
-  async function loadOrders() {
-    let { data: orders, error } = await supabaseClient
-      .from('orders')
-      .select('*');
-    if(error) {
-      console.error("Error loading orders:", error);
-      return;
-    }
-    renderOrders(orders);
-  }
+    const authContainer = document.getElementById('auth-container');
+    const dashboard = document.getElementById('dashboard');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const pendingTableBody = document.querySelector('#pending-table tbody');
+    const preparedTableBody = document.querySelector('#prepared-table tbody');
+    const exportCsvBtn = document.getElementById('export-csv');
+    const clearOrdersBtn = document.getElementById('clear-orders');
 
-  // Render orders into respective tables based on status
-  function renderOrders(orders) {
-    pendingTableBody.innerHTML = '';
-    preparedTableBody.innerHTML = '';
-    orders.forEach(order => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${new Date(order.order_date).toLocaleString()}</td>
-        <td>${order.ordered_items}</td>
-        <td>${order.order_value}</td>
-        <td>${order.buyer_name}</td>
-        <td>${order.loc}</td>
-      `;
-      if(order.status === 'pending') {
-        const td = document.createElement('td');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.addEventListener('change', () => {
-          // Mark order as prepared
-          updateOrderStatus(order.id, 'prepared');
-        });
-        td.appendChild(checkbox);
-        tr.appendChild(td);
-        pendingTableBody.appendChild(tr);
-      } else if(order.status === 'prepared') {
-        const td = document.createElement('td');
-        const undoBtn = document.createElement('button');
-        undoBtn.textContent = 'Undo';
-        undoBtn.addEventListener('click', () => {
-          // Revert order to pending
-          updateOrderStatus(order.id, 'pending');
-        });
-        td.appendChild(undoBtn);
-        tr.appendChild(td);
-        preparedTableBody.appendChild(tr);
+    // Listen for auth state changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        authContainer.style.display = 'none';
+        dashboard.style.display = 'block';
+        loadOrders();
+        subscribeToOrders();
+      } else {
+        authContainer.style.display = 'block';
+        dashboard.style.display = 'none';
       }
     });
-  }
 
-  // Update an order's status in Supabase
-  async function updateOrderStatus(orderId, newStatus) {
-    const { error } = await supabaseClient
-      .from('orders')
-      .update({ status: newStatus })
-      .match({ id: orderId });
-    if(error) {
-      alert('Error updating order: ' + error.message);
-    }
-  }
-
-  // Real-time subscription to the orders table for updates
-  function subscribeToOrders() {
-    supabaseClient
-      .from('orders')
-      .on('*', payload => {
-        loadOrders();
-      })
-      .subscribe();
-  }
-
-  // Export orders as CSV
-  exportCsvBtn.addEventListener('click', async () => {
-    let { data: orders, error } = await supabaseClient
-      .from('orders')
-      .select('*');
-    if(error) {
-      alert('Error fetching orders: ' + error.message);
-      return;
-    }
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Order Date,Ordered Items,Order Value,Buyer Name,Loc,Status\n";
-    orders.forEach(order => {
-      const row = [
-        new Date(order.order_date).toLocaleString(),
-        order.ordered_items,
-        order.order_value,
-        order.buyer_name,
-        order.loc,
-        order.status
-      ];
-      csvContent += row.join(",") + "\n";
+    // Login form submission with detailed logging for troubleshooting
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      console.log("Login attempt response:", { data, error });
+      if (error) {
+        alert('Login error: ' + error.message);
+      } else {
+        alert("Login successful!");
+      }
     });
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "orders.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
 
-  // Clear all orders with a confirmation prompt
-  clearOrdersBtn.addEventListener('click', async () => {
-    if(confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) {
+    // Logout functionality
+    logoutBtn.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+    });
+
+    // Function to load orders from Supabase
+    async function loadOrders() {
+      let { data: orders, error } = await supabaseClient
+        .from('orders')
+        .select('*');
+      if (error) {
+        console.error("Error loading orders:", error);
+        return;
+      }
+      renderOrders(orders);
+    }
+
+    // Render orders into respective tables based on status
+    function renderOrders(orders) {
+      pendingTableBody.innerHTML = '';
+      preparedTableBody.innerHTML = '';
+      orders.forEach(order => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${new Date(order.order_date).toLocaleString()}</td>
+          <td>${order.ordered_items}</td>
+          <td>${order.order_value}</td>
+          <td>${order.buyer_name}</td>
+          <td>${order.loc}</td>
+        `;
+        if (order.status === 'pending') {
+          const td = document.createElement('td');
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.addEventListener('change', () => {
+            updateOrderStatus(order.id, 'prepared');
+          });
+          td.appendChild(checkbox);
+          tr.appendChild(td);
+          pendingTableBody.appendChild(tr);
+        } else if (order.status === 'prepared') {
+          const td = document.createElement('td');
+          const undoBtn = document.createElement('button');
+          undoBtn.textContent = 'Undo';
+          undoBtn.addEventListener('click', () => {
+            updateOrderStatus(order.id, 'pending');
+          });
+          td.appendChild(undoBtn);
+          tr.appendChild(td);
+          preparedTableBody.appendChild(tr);
+        }
+      });
+    }
+
+    // Update an order's status in Supabase
+    async function updateOrderStatus(orderId, newStatus) {
       const { error } = await supabaseClient
         .from('orders')
-        .delete()
-        .neq('id', 0); // Delete all rows (adjust condition if needed)
-      if(error) {
-        alert('Error clearing orders: ' + error.message);
+        .update({ status: newStatus })
+        .match({ id: orderId });
+      if (error) {
+        alert('Error updating order: ' + error.message);
       }
     }
-  });
-</script>
+
+    // Real-time subscription to the orders table for updates
+    function subscribeToOrders() {
+      supabaseClient
+        .from('orders')
+        .on('*', payload => {
+          loadOrders();
+        })
+        .subscribe();
+    }
+
+    // Export orders as CSV
+    exportCsvBtn.addEventListener('click', async () => {
+      let { data: orders, error } = await supabaseClient
+        .from('orders')
+        .select('*');
+      if (error) {
+        alert('Error fetching orders: ' + error.message);
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Order Date,Ordered Items,Order Value,Buyer Name,Loc,Status\n";
+      orders.forEach(order => {
+        const row = [
+          new Date(order.order_date).toLocaleString(),
+          order.ordered_items,
+          order.order_value,
+          order.buyer_name,
+          order.loc,
+          order.status
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "orders.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Clear all orders with a confirmation prompt
+    clearOrdersBtn.addEventListener('click', async () => {
+      if (confirm("Are you sure you want to delete ALL orders? This action cannot be undone.")) {
+        const { error } = await supabaseClient
+          .from('orders')
+          .delete()
+          .neq('id', 0); // Delete all rows (adjust condition if needed)
+        if (error) {
+          alert('Error clearing orders: ' + error.message);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
