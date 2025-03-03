@@ -1,4 +1,5 @@
 [build]
 publish = "public"
+functions = "netlify/functions"
 # If you have a build command (like using a bundler), specify it here:
 # command = "npm run build"

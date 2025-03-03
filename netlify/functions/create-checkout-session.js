@@ -44,20 +44,32 @@ function validateLineItems(lineItems) {
   return true;
 }
 
+const jsonHeaders = {
+  'Content-Type': 'application/json'
+};
+
 exports.handler = async (event, context) => {
   console.log("Received event:", event);
 
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     console.error("Method not allowed:", event.httpMethod);
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { 
+      statusCode: 405, 
+      headers: jsonHeaders, 
+      body: JSON.stringify({ error: 'Method Not Allowed' }) 
+    };
   }
 
   // Rate limiting by IP address
   const ip = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown';
   if (rateLimit(ip)) {
     console.error(`Rate limit exceeded for IP: ${ip}`);
-    return { statusCode: 429, body: 'Too Many Requests' };
+    return { 
+      statusCode: 429, 
+      headers: jsonHeaders, 
+      body: JSON.stringify({ error: 'Too Many Requests' }) 
+    };
   }
 
   // Parse and validate request body
@@ -66,13 +78,21 @@ exports.handler = async (event, context) => {
     body = JSON.parse(event.body);
   } catch (err) {
     console.error("Error parsing JSON:", err);
-    return { statusCode: 400, body: 'Invalid JSON' };
+    return { 
+      statusCode: 400, 
+      headers: jsonHeaders, 
+      body: JSON.stringify({ error: 'Invalid JSON' }) 
+    };
   }
 
   const { lineItems } = body;
   if (!validateLineItems(lineItems)) {
     console.error("Invalid lineItems data:", lineItems);
-    return { statusCode: 400, body: 'Invalid cart data' };
+    return { 
+      statusCode: 400, 
+      headers: jsonHeaders, 
+      body: JSON.stringify({ error: 'Invalid cart data' }) 
+    };
   }
 
   // Set success and cancel URLs from env or fallback to your live domain
@@ -94,12 +114,14 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
+      headers: jsonHeaders,
       body: JSON.stringify({ id: session.id, url: session.url }),
     };
   } catch (error) {
     console.error("Error creating Stripe session:", error);
     return {
       statusCode: 500,
+      headers: jsonHeaders,
       body: JSON.stringify({ error: error.message }),
     };
   }

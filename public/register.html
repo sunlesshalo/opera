@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - Opera Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Load Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div id="auth-container">
+    <h2>Register</h2>
+    <form id="register-form">
+      <input type="email" id="register-email" placeholder="Email" required>
+      <input type="password" id="register-password" placeholder="Password" required>
+      <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="dashboard.html">Login here</a>.</p>
+  </div>
+
+  <script>
+    // Replace these with your Supabase project credentials
+    const supabaseUrl = 'https://xxazvjnafqjchvqwqklg.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4YXp2am5hZnFqY2h2cXdxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5OTA1MjAsImV4cCI6MjA1NjU2NjUyMH0.PF9P_EvwV3XdjnjJC0w1WazqjZnDejiJnhImfe6sDFc';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const registerForm = document.getElementById('register-form');
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+
+      const { error, data } = await supabase.auth.signUp({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        alert("Registration error: " + error.message);
+      } else {
+        alert("Registration successful! Please check your email for confirmation.");
+        // Optionally, redirect the user to the login/dashboard page:
+        window.location.href = "dashboard.html";
+      }
+    });
+  </script>
+</body>
+</html>
