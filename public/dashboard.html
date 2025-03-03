@@ -89,14 +89,18 @@
       }
     });
 
-    // Login form submission
+    // Login form submission with detailed logging for troubleshooting
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("Login attempt response:", { data, error });
       if(error) {
+        // This error message might indicate issues like unconfirmed email, wrong credentials, etc.
         alert('Login error: ' + error.message);
+      } else {
+        alert("Login successful!");
       }
     });
 
@@ -111,7 +115,7 @@
         .from('orders')
         .select('*');
       if(error) {
-        console.error(error);
+        console.error("Error loading orders:", error);
         return;
       }
       renderOrders(orders);
@@ -135,7 +139,6 @@
           const checkbox = document.createElement('input');
           checkbox.type = 'checkbox';
           checkbox.addEventListener('change', () => {
-            // Mark order as prepared
             updateOrderStatus(order.id, 'prepared');
           });
           td.appendChild(checkbox);
@@ -146,7 +149,6 @@
           const undoBtn = document.createElement('button');
           undoBtn.textContent = 'Undo';
           undoBtn.addEventListener('click', () => {
-            // Revert order to pending
             updateOrderStatus(order.id, 'pending');
           });
           td.appendChild(undoBtn);
@@ -214,7 +216,7 @@
         const { error } = await supabase
           .from('orders')
           .delete()
-          .neq('id', 0); // Delete all rows (adjust condition if needed)
+          .neq('id', 0); // Deletes all rows; adjust condition if needed
         if(error) {
           alert('Error clearing orders: ' + error.message);
         }
