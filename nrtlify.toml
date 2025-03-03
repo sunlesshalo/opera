@@ -1,0 +1,4 @@
+[build]
+publish = "public"
+# If you have a build command (like using a bundler), specify it here:
+# command = "npm run build"
