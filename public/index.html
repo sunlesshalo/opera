@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Opera Plaza</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Load Stripe.js; using the provided publishable test key -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Load Stripe.js if needed -->
   <script src="https://js.stripe.com/v3/"></script>
-  <script>
-    // Folosiți cheia publică de test corespunzătoare
-    const stripe = Stripe('pk_test_kzR0GijspryB9bnxsMOyYcRO00DB7Xi62A');
-  </script>
 </head>
 <body>
   <header>
@@ -19,15 +15,14 @@
   </header>
   <main>
     <section id="products"></section>
-    <!-- Optional spacer if needed -->
   </main>
-  <!-- Sticky cart container at the bottom -->
   <div id="cart">
     <h2>Produsele următoare vă vor aștepta în pauză:</h2>
     <ul id="cart-items"></ul>
     <p>Total: <span id="total">0.00</span> RON</p>
     <button id="checkoutBtn">Finalizare comandă</button>
   </div>
+  <!-- Include the client-side JS file -->
   <script src="app.js"></script>
 </body>
 </html>
