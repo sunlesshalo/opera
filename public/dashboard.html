@@ -4,46 +4,36 @@
   <meta charset="UTF-8">
   <title>Panou de Vânzări</title>
   <style>
-    /* Responsive login form */
-    #auth-container {
-      width: 90%;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      box-sizing: border-box;
-    }
-    #auth-container input,
-    #auth-container button {
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      box-sizing: border-box;
-      font-size: 18px;
-    }
-    /* Responsive order cards */
-    .order-card {
-      width: 90%;
-      max-width: 500px;
-      margin: 10px auto;
-      padding: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background: #fff;
-      box-sizing: border-box;
-    }
-    /* General styling */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
       background-color: #f5f5f5;
     }
+    /* Autentificare */
+    #auth-container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #auth-container input, #auth-container button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    #auth-container button {
+      cursor: pointer;
+    }
+    /* Dashboard */
     #dashboard {
       display: none;
     }
+    /* Dashboard Header (includes logout button) */
     #dashboard-header {
       display: flex;
       justify-content: space-between;
@@ -54,7 +44,7 @@
       padding: 8px 12px;
       cursor: pointer;
     }
-    /* Global toggle buttons in card view */
+    /* Global toggle buttons (for card view) */
     #global-toggle {
       margin-bottom: 20px;
     }
@@ -63,7 +53,30 @@
       padding: 8px 12px;
       cursor: pointer;
     }
-    /* Table view styling (unchanged for now) */
+    /* Card view styling */
+    #cards-view {
+      display: block;
+    }
+    .order-card {
+      background: #fff;
+      margin: 10px auto; /* centers the card */
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+      max-width: 500px;  /* prevents cards from being too wide on large screens */
+      box-sizing: border-box;
+    }
+    .order-card header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .order-card header span {
+      flex: 1;
+      font-weight: bold;
+    }
+    /* Table view styling */
     #table-view {
       display: none;
     }
@@ -87,12 +100,29 @@
       padding: 8px 12px;
       cursor: pointer;
     }
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      table, .order-card {
+        font-size: 14px;
+      }
+      #auth-container {
+        max-width: 90%;
+        padding: 20px;
+      }
+      #auth-container input, #auth-container button {
+        font-size: 18px;
+        padding: 14px;
+      }
+    }
   </style>
-  <!-- Include Supabase JS client -->
+  <!-- Supabase JS client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <!-- Login Form -->
+  <!-- Formular de autentificare -->
   <div id="auth-container">
     <h2>Autentificare</h2>
     <form id="login-form">
@@ -103,24 +133,24 @@
     </form>
   </div>
 
-  <!-- Dashboard -->
+  <!-- Panou principal -->
   <div id="dashboard">
-    <!-- Dashboard header with logout button -->
+    <!-- Dashboard Header cu butonul de deconectare -->
     <div id="dashboard-header">
       <h1>Panou de Vânzări</h1>
       <button id="logout-btn">Deconectare</button>
     </div>
-    <!-- Global toggle buttons (visible in card view) -->
+
+    <!-- Container pentru view-ul de carduri (implicit) -->
     <div id="global-toggle">
       <button id="view-table-btn">Vizualizare în Tabel</button>
       <button id="refresh-cards">Actualizare</button>
     </div>
-    <!-- Card view (default view, shows pending orders as cards) -->
     <div id="cards-view">
-      <!-- Order cards will be generated here -->
+      <!-- Cardurile vor fi generate dinamic (doar comenzi pending) -->
     </div>
 
-    <!-- Table view (full records, includes refresh, export and clear buttons) -->
+    <!-- Container pentru view-ul de tabel -->
     <div id="table-view">
       <div class="table-buttons">
         <button id="export-csv">Exportă CSV</button>
@@ -128,7 +158,6 @@
         <button id="refresh-table">Actualizare</button>
       </div>
       <button id="back-to-cards">Înapoi la Carduri</button>
-      <!-- Pending orders table -->
       <h2>Comenzi în așteptare</h2>
       <table id="pending-table">
         <thead>
@@ -144,7 +173,6 @@
         </thead>
         <tbody></tbody>
       </table>
-      <!-- Prepared orders table -->
       <h2>Comenzi pregătite</h2>
       <table id="prepared-table">
         <thead>
@@ -164,12 +192,12 @@
   </div>
 
   <script>
-    // Initialize Supabase client
+    // Configurare Supabase
     const supabaseUrl = 'https://xxazvjnafqjchvqwqklg.supabase.co';
-    const supabaseKey = 'YOUR_SUPABASE_KEY_HERE';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4YXp2am5hZnFqY2h2cXdxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5OTA1MjAsImV4cCI6MjA1NjU2NjUyMH0.PF9P_EvwV3XdjnjJC0w1WazqjZnDejiJnhImfe6sDFc';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // DOM elements
+    // Elemente DOM
     const authContainer = document.getElementById('auth-container');
     const dashboard = document.getElementById('dashboard');
     const loginForm = document.getElementById('login-form');
@@ -184,10 +212,10 @@
     const clearOrdersBtn = document.getElementById('clear-orders');
     const refreshTableBtn = document.getElementById('refresh-table');
 
-    // Store current orders
+    // Stocăm comenzile curente
     let currentOrders = [];
 
-    // Check for an existing session on page load (prevents logout on refresh)
+    // Verificare sesiune existentă la încărcarea paginii (pentru a nu forța deconectarea la refresh)
     (async () => {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
@@ -201,7 +229,7 @@
       }
     })();
 
-    // Authentication state change listener
+    // Ascultare pentru schimbări de autentificare
     supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
         authContainer.style.display = 'none';
@@ -214,12 +242,13 @@
       }
     });
 
-    // Login form submission
+    // Formular de autentificare
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      console.log("Răspuns autentificare:", { data, error });
       if (error) {
         alert("Eroare la autentificare: " + error.message);
       } else {
@@ -227,20 +256,21 @@
       }
     });
 
-    // Logout functionality
+    // Funcționalitate de deconectare
     logoutBtn.addEventListener('click', async () => {
       await supabaseClient.auth.signOut();
     });
 
-    // View toggle: switch to table view (hides card view buttons)
+    // Butonul de a trece la view-ul de tabel (doar în card view)
     viewTableBtn.addEventListener('click', () => {
+      // Ascundem butoanele specifice card view
       globalToggle.style.display = 'none';
       cardsView.style.display = 'none';
       tableView.style.display = 'block';
       renderTables(currentOrders);
     });
 
-    // Back button: switch back to card view
+    // Butonul din tabel pentru a reveni la card view
     backToCardsBtn.addEventListener('click', () => {
       tableView.style.display = 'none';
       globalToggle.style.display = 'block';
@@ -248,11 +278,15 @@
       loadOrders();
     });
 
-    // Refresh buttons in both views
-    refreshCardsBtn.addEventListener('click', loadOrders);
-    refreshTableBtn.addEventListener('click', loadOrders);
+    // Butoanele de Actualizare (refresh) în ambele view-uri
+    refreshCardsBtn.addEventListener('click', () => {
+      loadOrders();
+    });
+    refreshTableBtn.addEventListener('click', () => {
+      loadOrders();
+    });
 
-    // Load orders from Supabase
+    // Încarcă comenzile din Supabase
     async function loadOrders() {
       let { data: orders, error } = await supabaseClient
         .from('orders')
@@ -268,7 +302,7 @@
       }
     }
 
-    // Format ordered items into HTML (each item on a new line)
+    // Formatează textul produselor comandate
     function formatOrderedItems(orderedItemsText) {
       let html = "";
       try {
@@ -283,7 +317,7 @@
       return html;
     }
 
-    // Render pending orders as cards
+    // Renderizează cardurile pentru comenzile pending (doar în view-ul de carduri)
     function renderCards(orders) {
       cardsView.innerHTML = "";
       orders.forEach(order => {
@@ -291,8 +325,8 @@
           const card = document.createElement('div');
           card.className = "order-card";
 
-          // Display only client name from buyer_name
-          const name = order.buyer_name.split(" (")[0];
+          // Extragem doar numele din buyer_name
+          const { name } = parseBuyerName(order.buyer_name);
           const header = document.createElement('header');
           const nameEl = document.createElement('span');
           nameEl.textContent = name;
@@ -307,17 +341,17 @@
           header.appendChild(checkbox);
           card.appendChild(header);
 
-          // Ordered items
+          // Produse comandate
           const orderItemsEl = document.createElement('div');
           orderItemsEl.innerHTML = formatOrderedItems(order.ordered_items);
           card.appendChild(orderItemsEl);
 
-          // Total order value
+          // Valoare totală
           const totalEl = document.createElement('div');
           totalEl.textContent = "Valoare totală: " + (order.order_value / 100);
           card.appendChild(totalEl);
 
-          // Custom field "loc"
+          // Loc (valoarea custom "loc" de la stripe)
           const locEl = document.createElement('div');
           locEl.textContent = "Loc: " + order.loc;
           card.appendChild(locEl);
@@ -327,30 +361,15 @@
       });
     }
 
-    // Render orders in table view
+    // Renderizează view-ul de tabel (pentru ambele categorii)
     function renderTables(orders) {
       const pendingTableBody = document.querySelector('#pending-table tbody');
       const preparedTableBody = document.querySelector('#prepared-table tbody');
       pendingTableBody.innerHTML = "";
       preparedTableBody.innerHTML = "";
       orders.forEach(order => {
-        // Extract name and address from buyer_name
-        let name = order.buyer_name.split(" (")[0];
-        let formattedAddress = "";
-        const idx = order.buyer_name.indexOf(" (");
-        if (idx !== -1) {
-          const addressStr = order.buyer_name.substring(idx + 2, order.buyer_name.length - 1);
-          try {
-            const addressObj = JSON.parse(addressStr);
-            formattedAddress = addressObj.line1;
-            if (addressObj.line2 && addressObj.line2.trim() && addressObj.line2 !== "null") {
-              formattedAddress += ", " + addressObj.line2;
-            }
-            formattedAddress += ", " + addressObj.city + ", " + addressObj.state + ", " + addressObj.postal_code + ", " + addressObj.country;
-          } catch(e) {
-            formattedAddress = "";
-          }
-        }
+        // Extragem numele și adresa formatată din buyer_name
+        const { name, formattedAddress } = parseBuyerName(order.buyer_name);
         const orderDate = new Date(order.order_date).toLocaleString();
         const orderedItemsHtml = formatOrderedItems(order.ordered_items);
         const orderValue = order.order_value / 100;
@@ -387,7 +406,33 @@
       });
     }
 
-    // Update order status in Supabase
+    // Funcția de parsare a buyer_name (extrage numele și adresa)
+    function parseBuyerName(buyerNameStr) {
+      const idx = buyerNameStr.indexOf(" (");
+      if (idx !== -1) {
+        const name = buyerNameStr.substring(0, idx);
+        const addressStr = buyerNameStr.substring(idx + 2, buyerNameStr.length - 1);
+        try {
+          const addressObj = JSON.parse(addressStr);
+          // Format: line1, line2 (dacă există), city, state, postal_code, country
+          let formatted = addressObj.line1;
+          if (addressObj.line2 && addressObj.line2.trim() && addressObj.line2 !== "null") {
+            formatted += ", " + addressObj.line2;
+          }
+          formatted += ", " + addressObj.city;
+          formatted += ", " + addressObj.state;
+          formatted += ", " + addressObj.postal_code;
+          formatted += ", " + addressObj.country;
+          return { name, formattedAddress: formatted };
+        } catch(e) {
+          return { name: buyerNameStr, formattedAddress: "" };
+        }
+      } else {
+        return { name: buyerNameStr, formattedAddress: "" };
+      }
+    }
+
+    // Actualizează statusul unei comenzi
     async function updateOrderStatus(orderId, newStatus) {
       const { error } = await supabaseClient
         .from('orders')
@@ -400,7 +445,7 @@
       }
     }
 
-    // Subscribe to real-time updates
+    // Abonare la modificări în timp real
     function subscribeToOrders() {
       supabaseClient
         .from('orders')
@@ -410,7 +455,7 @@
         .subscribe();
     }
 
-    // Export orders as CSV (table view)
+    // Exportă comenzile ca CSV (doar în view-ul de tabel)
     async function exportCsv() {
       let { data: orders, error } = await supabaseClient
         .from('orders')
@@ -422,22 +467,7 @@
       let csvContent = "data:text/csv;charset=utf-8,";
       csvContent += "Data comenzii,Produse comandate,Valoare comandă,Nume cumpărător,Adresă,Loc,Status\n";
       orders.forEach(order => {
-        let name = order.buyer_name.split(" (")[0];
-        let formattedAddress = "";
-        const idx = order.buyer_name.indexOf(" (");
-        if (idx !== -1) {
-          const addressStr = order.buyer_name.substring(idx + 2, order.buyer_name.length - 1);
-          try {
-            const addressObj = JSON.parse(addressStr);
-            formattedAddress = addressObj.line1;
-            if (addressObj.line2 && addressObj.line2.trim() && addressObj.line2 !== "null") {
-              formattedAddress += ", " + addressObj.line2;
-            }
-            formattedAddress += ", " + addressObj.city + ", " + addressObj.state + ", " + addressObj.postal_code + ", " + addressObj.country;
-          } catch(e) {
-            formattedAddress = "";
-          }
-        }
+        const { name, formattedAddress } = parseBuyerName(order.buyer_name);
         const orderDate = new Date(order.order_date).toLocaleString();
         const orderedItems = order.ordered_items;
         const orderValue = order.order_value / 100;
@@ -462,7 +492,7 @@
     }
     exportCsvBtn.addEventListener('click', exportCsv);
 
-    // Clear all orders (table view)
+    // Șterge toate comenzile (doar în view-ul de tabel)
     async function clearOrders() {
       if (confirm("Ești sigur că vrei să ștergi TOATE comenzile? Această acțiune nu poate fi anulată.")) {
         const { error } = await supabaseClient
