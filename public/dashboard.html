@@ -59,11 +59,15 @@
     }
     .order-card {
       background: #fff;
-      margin: 10px 0;
+      margin: 10px auto; /* centers the card */
       padding: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      width: 100%;
+      max-width: 500px;  /* prevents cards from being too wide on large screens */
+      box-sizing: border-box;
     }
+
     .order-card header {
       display: flex;
       align-items: center;
