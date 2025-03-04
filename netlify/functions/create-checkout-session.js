@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // Ensure lineItems is provided and valid
+  // Expecting lineItems (an array) and optionally a custom "loc" value from the client.
   const { lineItems, loc } = body;
   if (!lineItems || !validateLineItems(lineItems)) {
     console.error("Invalid or missing lineItems data:", lineItems);
@@ -97,7 +97,7 @@ exports.handler = async (event, context) => {
   console.log("Creating Stripe session with successUrl:", successUrl, "and cancelUrl:", cancelUrl);
 
   try {
-    // Include metadata with the products list and custom field "loc"
+    // Include metadata with the products list; we'll send "loc" as metadata too.
     const metadata = {
       products: JSON.stringify(lineItems.map(item => ({
         name: item.price_data.product_data.name,
@@ -113,6 +113,15 @@ exports.handler = async (event, context) => {
       line_items: lineItems,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      billing_address_collection: 'required', // Ask for billing address
+      custom_fields: [
+        {
+          key: 'loc',
+          label: { type: 'custom', custom: 'Location' },
+          type: 'text',
+          optional: true // set to false if you want to force input
+        }
+      ],
       metadata: metadata
     });
 
