@@ -193,6 +193,18 @@
     const supabaseUrl = 'https://xxazvjnafqjchvqwqklg.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4YXp2am5hZnFqY2h2cXdxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5OTA1MjAsImV4cCI6MjA1NjU2NjUyMH0.PF9P_EvwV3XdjnjJC0w1WazqjZnDejiJnhImfe6sDFc';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    (async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        authContainer.style.display = 'none';
+        dashboard.style.display = 'block';
+        loadOrders();
+        subscribeToOrders();
+      } else {
+        authContainer.style.display = 'block';
+        dashboard.style.display = 'none';
+      }
+    })();
 
     // Elemente DOM
     const authContainer = document.getElementById('auth-container');
