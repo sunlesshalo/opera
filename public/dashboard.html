@@ -3,76 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <title>Panou de Vânzări</title>
-  <!-- Include fișierul CSS extern sau stiluri inline -->
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-    }
-    /* Containerul de autentificare și dashboard */
-    #auth-container, #dashboard {
       padding: 20px;
+      background-color: #f5f5f5;
     }
-    /* Logout fixat în colțul stânga sus pe desktop */
-    #logout-btn.desktop {
-      position: fixed;
-      top: 10px;
-      left: 10px;
+    /* Auth container */
+    #auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    /* Containerul pentru butoane pe desktop */
-    .button-container {
+    #auth-container input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+    #auth-container button {
+      width: 100%;
+      padding: 10px;
+    }
+    /* Dashboard container */
+    #dashboard {
+      display: none;
+    }
+    /* Global view toggle button */
+    .global-toggle {
       margin-bottom: 20px;
     }
-    /* Stilurile pentru tabele */
+    /* Card view styling */
+    #cards-view {
+      display: block;
+    }
+    .order-card {
+      background: #fff;
+      margin: 10px 0;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .order-card header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .order-card header span {
+      flex: 1;
+      font-weight: bold;
+    }
+    /* Table view styling */
+    #table-view {
+      display: none;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
+      background: #fff;
     }
-    table, th, td {
-      border: 1px solid #ccc;
+    th, td {
       padding: 8px;
+      border: 1px solid #ccc;
       text-align: left;
     }
-    /* Hamburger menu - ascuns pe desktop */
-    .hamburger-menu {
-      display: none;
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
+    .table-buttons {
+      margin-bottom: 10px;
     }
-    .hamburger-menu button {
-      background: none;
-      border: none;
-      font-size: 24px;
-    }
-    .menu-items {
-      display: none;
-      position: fixed;
-      top: 50px;
-      right: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      z-index: 1000;
-      padding: 10px;
-    }
-    .menu-items button {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
-    }
-    /* Mobile styles */
+    /* Mobile optimizations */
     @media (max-width: 768px) {
-      .button-container {
-        display: none;
+      body {
+        padding: 10px;
       }
-      #logout-btn.desktop {
-        display: none;
+      table, .order-card {
+        font-size: 14px;
       }
-      .hamburger-menu {
-        display: block;
+      #auth-container {
+        margin: 20px auto;
+        padding: 15px;
       }
     }
   </style>
@@ -91,61 +104,55 @@
     </form>
   </div>
 
-  <!-- Butoane fixe pentru desktop -->
-  <button id="logout-btn" class="desktop">Deconectare</button>
-
-  <!-- Hamburger menu pentru mobil -->
-  <div class="hamburger-menu">
-    <button id="hamburger-btn">&#9776;</button>
-    <div class="menu-items" id="menu-items">
-      <button id="logout-btn-mobile">Deconectare</button>
-      <button id="export-csv-mobile">Exportă CSV</button>
-      <button id="clear-orders-mobile">Șterge toate comenzile</button>
-      <button id="refresh-mobile">Actualizare</button>
-    </div>
-  </div>
-
-  <!-- Conținutul panoului (afișat după autentificare) -->
-  <div id="dashboard" style="display: none;">
-    <h1>Panou de Vânzări</h1>
-    <!-- Container pentru butoanele desktop -->
-    <div class="button-container">
-      <button id="export-csv">Exportă CSV</button>
-      <button id="clear-orders">Șterge toate comenzile</button>
-      <button id="refresh">Actualizare</button>
+  <!-- Panoul principal (afișat după autentificare) -->
+  <div id="dashboard">
+    <!-- Butonul global pentru a schimba view-ul -->
+    <div id="global-toggle" class="global-toggle">
+      <!-- În modul card view, se va afișa "Vizualizare în Tabel" -->
+      <button id="view-table-btn">Vizualizare în Tabel</button>
     </div>
 
-    <!-- Tabelul cu comenzi în așteptare -->
-    <h2>Comenzi în așteptare</h2>
-    <table id="pending-table">
-      <thead>
-        <tr>
-          <th>Data comenzii</th>
-          <th>Produse comandate</th>
-          <th>Valoare comandă</th>
-          <th>Nume cumpărător</th>
-          <th>Loc</th>
-          <th>Marchează ca pregătit</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- Card view: afișează comenzile în așteptare ca carduri -->
+    <div id="cards-view">
+      <!-- Cardurile vor fi generate dinamic -->
+    </div>
 
-    <!-- Tabelul cu comenzi pregătite -->
-    <h2>Comenzi pregătite</h2>
-    <table id="prepared-table">
-      <thead>
-        <tr>
-          <th>Data comenzii</th>
-          <th>Produse comandate</th>
-          <th>Valoare comandă</th>
-          <th>Nume cumpărător</th>
-          <th>Loc</th>
-          <th>Anulează pregătirea</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <!-- Table view: afișează înregistrări complete -->
+    <div id="table-view">
+      <div class="table-buttons">
+        <button id="export-csv">Exportă CSV</button>
+        <button id="clear-orders">Șterge toate comenzile</button>
+      </div>
+      <button id="back-to-cards">Înapoi la Carduri</button>
+      <h2>Comenzi în așteptare</h2>
+      <table id="pending-table">
+        <thead>
+          <tr>
+            <th>Data comenzii</th>
+            <th>Produse comandate</th>
+            <th>Valoare comandă</th>
+            <th>Nume cumpărător</th>
+            <th>Loc</th>
+            <th>Marchează ca pregătit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <h2>Comenzi pregătite</h2>
+      <table id="prepared-table">
+        <thead>
+          <tr>
+            <th>Data comenzii</th>
+            <th>Produse comandate</th>
+            <th>Valoare comandă</th>
+            <th>Nume cumpărător</th>
+            <th>Loc</th>
+            <th>Anulează pregătirea</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </div>
 
   <script>
@@ -154,24 +161,23 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4YXp2am5hZnFqY2h2cXdxa2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA5OTA1MjAsImV4cCI6MjA1NjU2NjUyMH0.PF9P_EvwV3XdjnjJC0w1WazqjZnDejiJnhImfe6sDFc';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Elementele UI
+    // Elementele DOM
     const authContainer = document.getElementById('auth-container');
     const dashboard = document.getElementById('dashboard');
     const loginForm = document.getElementById('login-form');
-    const logoutBtnDesktop = document.getElementById('logout-btn');
-    const logoutBtnMobile = document.getElementById('logout-btn-mobile');
-    const pendingTableBody = document.querySelector('#pending-table tbody');
-    const preparedTableBody = document.querySelector('#prepared-table tbody');
+    const cardsView = document.getElementById('cards-view');
+    const tableView = document.getElementById('table-view');
+    const viewTableBtn = document.getElementById('view-table-btn');
+    const backToCardsBtn = document.getElementById('back-to-cards');
+
+    // Elemente pentru butoanele din tabel
     const exportCsvBtn = document.getElementById('export-csv');
     const clearOrdersBtn = document.getElementById('clear-orders');
-    const refreshBtn = document.getElementById('refresh');
-    const exportCsvMobile = document.getElementById('export-csv-mobile');
-    const clearOrdersMobile = document.getElementById('clear-orders-mobile');
-    const refreshMobile = document.getElementById('refresh-mobile');
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const menuItems = document.getElementById('menu-items');
 
-    // Ascultare pentru schimbări de stare de autentificare
+    // Stocăm comenzile curente pentru a le reutiliza când se schimbă view-ul
+    let currentOrders = [];
+
+    // Autentificare: ascultăm schimbările stării de autentificare
     supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
         authContainer.style.display = 'none';
@@ -184,7 +190,7 @@
       }
     });
 
-    // Formular de autentificare cu mesaje de logare
+    // Formular de autentificare
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -192,20 +198,27 @@
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       console.log("Răspuns autentificare:", { data, error });
       if (error) {
-        alert('Eroare la autentificare: ' + error.message);
+        alert("Eroare la autentificare: " + error.message);
       } else {
         alert("Autentificare reușită!");
       }
     });
 
-    // Funcție comună de deconectare
-    async function logout() {
-      await supabaseClient.auth.signOut();
-    }
-    logoutBtnDesktop.addEventListener('click', logout);
-    logoutBtnMobile.addEventListener('click', logout);
+    // Butonul de view toggle: din card view trecem la tabel
+    viewTableBtn.addEventListener('click', () => {
+      cardsView.style.display = 'none';
+      tableView.style.display = 'block';
+      renderTables(currentOrders);
+    });
 
-    // Funcție pentru a încărca comenzile din Supabase
+    // Butonul din tabel pentru a reveni la card view
+    backToCardsBtn.addEventListener('click', () => {
+      tableView.style.display = 'none';
+      cardsView.style.display = 'block';
+      loadOrders();
+    });
+
+    // Încarcă comenzile din Supabase
     async function loadOrders() {
       let { data: orders, error } = await supabaseClient
         .from('orders')
@@ -214,10 +227,14 @@
         console.error("Eroare la încărcarea comenzilor:", error);
         return;
       }
-      renderOrders(orders);
+      currentOrders = orders;
+      renderCards(orders);
+      if (tableView.style.display === 'block') {
+        renderTables(orders);
+      }
     }
 
-    // Funcție pentru formatarea produselor comandate
+    // Formatează textul produselor comandate: fiecare produs pe rând, cu nume, preț (unit_amount/100) și cantitate
     function formatOrderedItems(orderedItemsText) {
       let html = "";
       try {
@@ -227,21 +244,64 @@
           html += `${item.name}, preț: ${price}, buc: ${item.quantity}<br>`;
         });
       } catch (e) {
-        // Dacă parsing-ul eșuează, returnează textul original
         html = orderedItemsText;
       }
       return html;
     }
 
-    // Renderizarea comenzilor în tabele în funcție de status
-    function renderOrders(orders) {
-      pendingTableBody.innerHTML = '';
-      preparedTableBody.innerHTML = '';
+    // Renderizează cardurile pentru comenzile pending
+    function renderCards(orders) {
+      cardsView.innerHTML = "";
+      orders.forEach(order => {
+        if (order.status === 'pending') {
+          const card = document.createElement('div');
+          card.className = "order-card";
+
+          // Header: numele cumpărătorului cu checkbox pentru a marca comanda ca pregătită
+          const header = document.createElement('header');
+          const nameEl = document.createElement('span');
+          nameEl.textContent = order.buyer_name;
+          const checkbox = document.createElement('input');
+          checkbox.type = "checkbox";
+          checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+              updateOrderStatus(order.id, 'prepared');
+            }
+          });
+          header.appendChild(nameEl);
+          header.appendChild(checkbox);
+          card.appendChild(header);
+
+          // Comandă: lista produselor comandate
+          const orderItemsEl = document.createElement('div');
+          orderItemsEl.innerHTML = formatOrderedItems(order.ordered_items);
+          card.appendChild(orderItemsEl);
+
+          // Valoare totală a comenzii
+          const totalEl = document.createElement('div');
+          totalEl.textContent = "Valoare totală: " + (order.order_value / 100);
+          card.appendChild(totalEl);
+
+          // Loc
+          const locEl = document.createElement('div');
+          locEl.textContent = "Loc: " + order.loc;
+          card.appendChild(locEl);
+
+          cardsView.appendChild(card);
+        }
+      });
+    }
+
+    // Renderizează view-ul în formă de tabel: afișăm două tabele – unul pentru comenzile pending și unul pentru cele prepared
+    function renderTables(orders) {
+      const pendingTableBody = document.querySelector('#pending-table tbody');
+      const preparedTableBody = document.querySelector('#prepared-table tbody');
+      pendingTableBody.innerHTML = "";
+      preparedTableBody.innerHTML = "";
       orders.forEach(order => {
         const tr = document.createElement('tr');
         const orderDate = new Date(order.order_date).toLocaleString();
         const orderedItemsHtml = formatOrderedItems(order.ordered_items);
-        // Conversia valorii comenzii (divizare la 100)
         const orderValue = order.order_value / 100;
         tr.innerHTML = `
           <td>${orderDate}</td>
@@ -274,18 +334,20 @@
       });
     }
 
-    // Actualizează statusul unei comenzi în Supabase
+    // Actualizează statusul unei comenzi
     async function updateOrderStatus(orderId, newStatus) {
       const { error } = await supabaseClient
         .from('orders')
         .update({ status: newStatus })
         .match({ id: orderId });
       if (error) {
-        alert('Eroare la actualizarea comenzii: ' + error.message);
+        alert("Eroare la actualizarea comenzii: " + error.message);
+      } else {
+        loadOrders();
       }
     }
 
-    // Abonare în timp real la modificări din tabelul "orders"
+    // Abonare în timp real la modificări în tabelul "orders"
     function subscribeToOrders() {
       supabaseClient
         .from('orders')
@@ -295,13 +357,13 @@
         .subscribe();
     }
 
-    // Exportă comenzile ca CSV
+    // Exportă comenzile ca CSV (doar în view-ul de tabel)
     async function exportCsv() {
       let { data: orders, error } = await supabaseClient
         .from('orders')
         .select('*');
       if (error) {
-        alert('Eroare la preluarea comenzilor: ' + error.message);
+        alert("Eroare la preluarea comenzilor: " + error.message);
         return;
       }
       let csvContent = "data:text/csv;charset=utf-8,";
@@ -329,38 +391,20 @@
       document.body.removeChild(link);
     }
     exportCsvBtn.addEventListener('click', exportCsv);
-    exportCsvMobile.addEventListener('click', exportCsv);
 
-    // Șterge toate comenzile, cu confirmare
+    // Șterge toate comenzile (doar în view-ul de tabel)
     async function clearOrders() {
       if (confirm("Ești sigur că vrei să ștergi TOATE comenzile? Această acțiune nu poate fi anulată.")) {
         const { error } = await supabaseClient
           .from('orders')
           .delete()
-          .neq('id', 0); // Șterge toate rândurile
+          .neq('id', 0);
         if (error) {
-          alert('Eroare la ștergerea comenzilor: ' + error.message);
+          alert("Eroare la ștergerea comenzilor: " + error.message);
         }
       }
     }
     clearOrdersBtn.addEventListener('click', clearOrders);
-    clearOrdersMobile.addEventListener('click', clearOrders);
-
-    // Buton de actualizare (refresh)
-    async function refreshOrders() {
-      loadOrders();
-    }
-    refreshBtn.addEventListener('click', refreshOrders);
-    refreshMobile.addEventListener('click', refreshOrders);
-
-    // Funcționalitate pentru hamburger menu pe mobil
-    hamburgerBtn.addEventListener('click', () => {
-      if (menuItems.style.display === 'block') {
-        menuItems.style.display = 'none';
-      } else {
-        menuItems.style.display = 'block';
-      }
-    });
   </script>
 </body>
 </html>
