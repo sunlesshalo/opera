@@ -58,8 +58,17 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Use the custom field "loc" from metadata if available
-    const locValue = (session.metadata && session.metadata.loc) ? session.metadata.loc : "";
+    let locValue = "";
+    if (
+      session.custom_fields &&
+      session.custom_fields.length > 0 &&
+      session.custom_fields[0].text &&
+      session.custom_fields[0].text.value
+    ) {
+      locValue = session.custom_fields[0].text.value;
+    } else if (session.metadata && session.metadata.loc) {
+      locValue = session.metadata.loc;
+    }
 
     // For ordered_items, store the products metadata.
     const ordered_items = productsMetadata;
