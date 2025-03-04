@@ -19,7 +19,7 @@ function rateLimit(ip) {
 
 // Validate and sanitize the cart data (lineItems)
 function validateLineItems(lineItems) {
-  if (!Array.isArray(lineItems)) return false;
+  if (!Array.isArray(lineItems) || lineItems.length === 0) return false;
   for (const item of lineItems) {
     if (
       !item.price_data ||
@@ -40,9 +40,7 @@ function validateLineItems(lineItems) {
   return true;
 }
 
-const jsonHeaders = {
-  'Content-Type': 'application/json'
-};
+const jsonHeaders = { 'Content-Type': 'application/json' };
 
 exports.handler = async (event, context) => {
   console.log("Received event:", event);
@@ -81,13 +79,14 @@ exports.handler = async (event, context) => {
     };
   }
 
+  // Ensure lineItems is provided and valid
   const { lineItems, loc } = body;
-  if (!validateLineItems(lineItems)) {
-    console.error("Invalid lineItems data:", lineItems);
+  if (!lineItems || !validateLineItems(lineItems)) {
+    console.error("Invalid or missing lineItems data:", lineItems);
     return { 
       statusCode: 400, 
       headers: jsonHeaders, 
-      body: JSON.stringify({ error: 'Invalid cart data' }) 
+      body: JSON.stringify({ error: 'Invalid or missing line_items data' }) 
     };
   }
 
