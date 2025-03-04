@@ -37,23 +37,23 @@ exports.handler = async (event, context) => {
     const session = stripeEvent.data.object;
     console.log("Processing checkout.session.completed event for session:", session.id);
 
-    // Extract metadata. We expect that when creating the Checkout Session,
+    // Extract metadata.
+    // We expect that when creating the Checkout Session,
     // you pass the list of products as a JSON string in metadata.products
     // and a custom field "loc" in metadata.loc.
     let productsMetadata = "";
     if (session.metadata && session.metadata.products) {
-      productsMetadata = session.metadata.products; // a JSON string
+      productsMetadata = session.metadata.products;
     }
 
     // Extract total amount from the session
     const order_value = session.amount_total;
 
-    // Prepare buyer details. We'll store the buyer's name and optionally append the address.
+    // Prepare buyer details. Store the buyer's name and, if available, append the address.
     let buyer_name = "";
     if (session.customer_details) {
       buyer_name = session.customer_details.name || "";
       if (session.customer_details.address) {
-        // Append address details as a JSON string
         buyer_name += " (" + JSON.stringify(session.customer_details.address) + ")";
       }
     }
@@ -61,11 +61,11 @@ exports.handler = async (event, context) => {
     // Use the custom field "loc" from metadata if available
     const locValue = (session.metadata && session.metadata.loc) ? session.metadata.loc : "";
 
-    // For ordered_items, we store the products metadata.
+    // For ordered_items, store the products metadata.
     const ordered_items = productsMetadata;
 
-    // Set status as "paid"
-    const status = "paid";
+    // Set status to "pending" to satisfy the check constraint (allowed values: 'pending', 'prepared')
+    const status = "pending";
 
     // Log the data we are about to insert
     console.log("Inserting order with data:", {
@@ -83,9 +83,9 @@ exports.handler = async (event, context) => {
         {
           ordered_items,  // JSON string of products
           order_value,    // total amount
-          buyer_name,     // buyer's name and possibly address
+          buyer_name,     // buyer's name (and address, if any)
           loc: locValue,  // custom field from metadata
-          status,         // 'paid'
+          status,         // 'pending'
         }
       ]);
 
