@@ -14,7 +14,7 @@ header {
 main {
   padding: 20px;
   /* Extra bottom padding to ensure the last product is visible above the sticky cart */
-  padding-bottom: 140px;
+  padding-bottom: 180px;
 }
 
 h1, h2 {
