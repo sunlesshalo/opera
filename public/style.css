@@ -13,7 +13,7 @@ header {
 
 main {
   padding: 20px;
-  /* Add bottom padding so products don't get hidden under the sticky cart */
+  /* Extra bottom padding to ensure the last product is visible above the sticky cart */
   padding-bottom: 140px;
 }
 
@@ -81,8 +81,6 @@ button:active {
   text-align: center;
 }
 
-
-
 /* Remove bullet points from cart items */
 #cart-items {
   list-style: none;
@@ -105,7 +103,6 @@ button:active {
   margin-left: 10px;
   font-size: 1.2em;
 }
-
 
 /* Spacer to ensure main content doesn't go under the sticky cart */
 .spacer {
