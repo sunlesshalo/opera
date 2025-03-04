@@ -1,26 +1,28 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client using your service role key (DO NOT expose this key in client-side code)
+// Initialize Supabase client using the service role key
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Optionally, if you wish to verify webhook signatures, set your endpoint secret here:
+// Optionally, if you wish to verify webhook signatures, configure the endpoint secret here:
 // const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 exports.handler = async (event, context) => {
   console.log("Webhook received:", event.body);
 
-  // If verifying the signature, uncomment the following lines:
-  // const signature = event.headers['stripe-signature'];
-  // let stripeEvent;
-  // try {
-  //   stripeEvent = stripe.webhooks.constructEvent(event.body, signature, endpointSecret);
-  // } catch (err) {
-  //   console.error("Webhook signature verification failed:", err);
-  //   return { statusCode: 400, body: `Webhook Error: ${err.message}` };
-  // }
+  // If verifying signatures, uncomment the following block:
+  /*
+  const signature = event.headers['stripe-signature'];
+  let stripeEvent;
+  try {
+    stripeEvent = stripe.webhooks.constructEvent(event.body, signature, endpointSecret);
+  } catch (err) {
+    console.error("Webhook signature verification failed:", err);
+    return { statusCode: 400, body: `Webhook Error: ${err.message}` };
+  }
+  */
 
   // Without signature verification:
   let stripeEvent;
@@ -31,41 +33,59 @@ exports.handler = async (event, context) => {
     return { statusCode: 400, body: 'Invalid payload' };
   }
 
-  // Handle the checkout session completion event
   if (stripeEvent.type === 'checkout.session.completed') {
     const session = stripeEvent.data.object;
+    console.log("Processing checkout.session.completed event for session:", session.id);
 
-    // Extract data from the session:
-    const stripe_session_id = session.id;
-    const total_amount = session.amount_total; // in smallest currency unit
-    // Retrieve the list of products from metadata (if provided during session creation)
-    let products = [];
+    // Extract metadata. We expect that when creating the Checkout Session,
+    // you pass the list of products as a JSON string in metadata.products
+    // and a custom field "loc" in metadata.loc.
+    let productsMetadata = "";
     if (session.metadata && session.metadata.products) {
-      try {
-        products = JSON.parse(session.metadata.products);
-      } catch (err) {
-        console.error("Error parsing products metadata:", err);
+      productsMetadata = session.metadata.products; // a JSON string
+    }
+
+    // Extract total amount from the session
+    const order_value = session.amount_total;
+
+    // Prepare buyer details. We'll store the buyer's name and optionally append the address.
+    let buyer_name = "";
+    if (session.customer_details) {
+      buyer_name = session.customer_details.name || "";
+      if (session.customer_details.address) {
+        // Append address details as a JSON string
+        buyer_name += " (" + JSON.stringify(session.customer_details.address) + ")";
       }
     }
-    // Capture customer details (address, email, name, etc.)
-    const customer_details = session.customer_details || {};
-    // Capture any custom fields, such as "loc"
-    let custom_fields = {};
-    if (session.metadata && session.metadata.loc) {
-      custom_fields.loc = session.metadata.loc;
-    }
 
-    // Insert the order data into Supabase
+    // Use the custom field "loc" from metadata if available
+    const locValue = (session.metadata && session.metadata.loc) ? session.metadata.loc : "";
+
+    // For ordered_items, we store the products metadata.
+    const ordered_items = productsMetadata;
+
+    // Set status as "paid"
+    const status = "paid";
+
+    // Log the data we are about to insert
+    console.log("Inserting order with data:", {
+      ordered_items,
+      order_value,
+      buyer_name,
+      loc: locValue,
+      status,
+    });
+
+    // Insert the order into Supabase using your existing table schema
     const { data, error } = await supabase
       .from('orders')
       .insert([
         {
-          stripe_session_id,
-          total_amount,
-          products,
-          customer_details,
-          custom_fields,
-          status: 'paid' // You can adjust the status as needed
+          ordered_items,  // JSON string of products
+          order_value,    // total amount
+          buyer_name,     // buyer's name and possibly address
+          loc: locValue,  // custom field from metadata
+          status,         // 'paid'
         }
       ]);
 
@@ -78,7 +98,7 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log("Order recorded successfully:", data);
+    console.log("Order inserted successfully:", data);
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
@@ -86,7 +106,7 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // For events that are not handled, return a success response.
+  // For unhandled events, return success.
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
