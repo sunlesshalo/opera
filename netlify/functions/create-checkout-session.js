@@ -1,7 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Simple in-memory rate limiter
-// Allows up to 10 requests per IP per minute.
 const rateLimitStore = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 10;
@@ -9,7 +8,6 @@ const MAX_REQUESTS_PER_WINDOW = 10;
 function rateLimit(ip) {
   const currentTime = Date.now();
   const entry = rateLimitStore.get(ip) || { count: 0, firstRequest: currentTime };
-  // Reset if window passed
   if (currentTime - entry.firstRequest > RATE_LIMIT_WINDOW_MS) {
     entry.count = 0;
     entry.firstRequest = currentTime;
@@ -23,7 +21,6 @@ function rateLimit(ip) {
 function validateLineItems(lineItems) {
   if (!Array.isArray(lineItems)) return false;
   for (const item of lineItems) {
-    // Check required properties exist
     if (
       !item.price_data ||
       typeof item.price_data !== 'object' ||
@@ -35,7 +32,6 @@ function validateLineItems(lineItems) {
     ) {
       return false;
     }
-    // Sanitize product name and ensure values are numbers and positive.
     item.price_data.product_data.name = String(item.price_data.product_data.name).trim();
     item.price_data.unit_amount = Number(item.price_data.unit_amount);
     item.quantity = Number(item.quantity);
@@ -85,7 +81,7 @@ exports.handler = async (event, context) => {
     };
   }
 
-  const { lineItems } = body;
+  const { lineItems, loc } = body;
   if (!validateLineItems(lineItems)) {
     console.error("Invalid lineItems data:", lineItems);
     return { 
@@ -102,12 +98,23 @@ exports.handler = async (event, context) => {
   console.log("Creating Stripe session with successUrl:", successUrl, "and cancelUrl:", cancelUrl);
 
   try {
+    // Include metadata with the products list and custom field "loc"
+    const metadata = {
+      products: JSON.stringify(lineItems.map(item => ({
+        name: item.price_data.product_data.name,
+        unit_amount: item.price_data.unit_amount,
+        quantity: item.quantity
+      }))),
+      loc: loc || ""
+    };
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
       line_items: lineItems,
       success_url: successUrl,
       cancel_url: cancelUrl,
+      metadata: metadata
     });
 
     console.log("Stripe session created successfully:", session.id);
